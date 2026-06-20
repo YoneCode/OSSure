@@ -1,0 +1,23 @@
+# --- secrets ---
+.env
+.env.*
+!.env.example
+
+# --- python ---
+.venv*
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# --- node / frontend ---
+node_modules/
+dist/
+
+# --- build artifacts ---
+artifacts/
+
+# --- logs ---
+*.log
+
+# --- local tooling (never published) ---
+.kiro/
