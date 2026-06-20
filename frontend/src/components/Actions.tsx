@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Coins, ShieldPlus } from "lucide-react";
+import { Coins, ShieldPlus, Gavel, Search } from "lucide-react";
 import { Card } from "./ui/Card";
 import { Tag } from "./ui/Tag";
 import { Input } from "./ui/Input";
@@ -7,6 +7,7 @@ import { Button } from "./ui/Button";
 import { StatusLine } from "./ui/StatusLine";
 import { IconBubble } from "./ui/IconBubble";
 import { useActiveWallet, useTx } from "../hooks/useDepGuard";
+import { api, type Policy } from "../lib/genlayer";
 import { parseGen, formatGen } from "../lib/format";
 import { WOBBLY } from "../lib/tokens";
 
@@ -34,6 +35,8 @@ export function Actions({ onChanged }: { onChanged: () => void }) {
       <div className="grid gap-10 md:grid-cols-2">
         <Underwrite onChanged={onChanged} />
         <BuyPolicy onChanged={onChanged} />
+        <FileClaim onChanged={onChanged} />
+        <MyPosition />
       </div>
     </section>
   );
@@ -148,5 +151,102 @@ function BuyPolicy({ onChanged }: { onChanged: () => void }) {
   );
 }
 
+function FileClaim({ onChanged }: { onChanged: () => void }) {
+  const { authenticated } = useActiveWallet();
+  const { state, run } = useTx();
+  const [repo, setRepo] = useState("");
 
+  async function submit() {
+    const hash = await run("Filing claim (validators adjudicating)", "file_claim", { args: [repo.trim()] });
+    if (hash) onChanged();
+  }
 
+  return (
+    <Card className="rotate-1 p-6 md:p-8 transition-transform duration-100 hover:-rotate-1" radius={WOBBLY.c}>
+      <PanelHead
+        icon={<Gavel strokeWidth={2.5} className="h-7 w-7" />}
+        title="File a claim"
+        hint="Validators read GitHub & vote on a tier."
+        variant={2}
+      />
+      <Input label="Repository" placeholder="owner/name" value={repo} onChange={(e) => setRepo(e.target.value)} />
+      <p className="mt-3 text-base md:text-lg text-ink/60">
+        If the verdict is <b>abandoned</b>, your coverage is paid out automatically.
+        Adjudication can take a little while.
+      </p>
+      <Button className="mt-5 w-full" disabled={!authenticated || state.status === "pending"} onClick={submit}>
+        {authenticated ? "Adjudicate & settle" : "Connect to claim"}
+      </Button>
+      <StatusLine state={state} />
+    </Card>
+  );
+}
+
+function MyPosition() {
+  const { address } = useActiveWallet();
+  const [repo, setRepo] = useState("");
+  const [policy, setPolicy] = useState<Policy | null>(null);
+  const [shares, setShares] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string>("");
+
+  async function lookup() {
+    setMsg("");
+    setPolicy(null);
+    setShares(null);
+    if (!address) {
+      setMsg("Connect your wallet first.");
+      return;
+    }
+    const r = repo.trim();
+    try {
+      const sh = await api.getShares(r, address);
+      setShares(sh);
+    } catch {
+      /* no shares */
+    }
+    try {
+      const p = await api.getPolicy(r, address);
+      setPolicy(p);
+    } catch {
+      setMsg("No policy found for this wallet on that repo.");
+    }
+  }
+
+  return (
+    <Card className="-rotate-1 p-6 md:p-8 transition-transform duration-100 hover:rotate-1" radius={WOBBLY.a}>
+      <PanelHead
+        icon={<Search strokeWidth={2.5} className="h-7 w-7" />}
+        title="My position"
+        hint="Look up your policy & underwriting shares."
+        variant={3}
+      />
+      <div className="flex items-end gap-3">
+        <div className="flex-1">
+          <Input label="Repository" placeholder="owner/name" value={repo} onChange={(e) => setRepo(e.target.value)} />
+        </div>
+        <Button variant="secondary" onClick={lookup}>Check</Button>
+      </div>
+
+      {shares && shares !== "0" && (
+        <p className="mt-4 text-lg">Underwriting shares: <b className="font-head text-xl">{formatGen(shares)}</b></p>
+      )}
+      {policy && (
+        <dl className="mt-3 space-y-1 text-lg">
+          <Line k="Coverage" v={`${formatGen(policy.coverage_wei)} GEN`} />
+          <Line k="Status" v={policy.status} />
+          <Line k="Last verdict" v={policy.verdict || "--"} />
+        </dl>
+      )}
+      {msg && <p className="mt-3 text-base text-ink/60">{msg}</p>}
+    </Card>
+  );
+}
+
+function Line({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex items-baseline justify-between border-b border-dashed border-ink/25 pb-1">
+      <dt className="text-ink/60">{k}</dt>
+      <dd className="font-head">{v}</dd>
+    </div>
+  );
+}
