@@ -1,0 +1,15 @@
+# GenLayer test configuration.
+# Direct-mode tests (tests/direct/) ignore the network. Integration tests run
+# against Testnet Bradbury using ACCOUNT_PRIVATE_KEY from .env.
+networks:
+  default: testnet_bradbury
+  testnet_bradbury:
+    accounts:
+      - "${ACCOUNT_PRIVATE_KEY}"
+    from: "${ACCOUNT_PRIVATE_KEY}"
+
+paths:
+  contracts: "contracts"
+  artifacts: "artifacts"
+
+environment: .env
