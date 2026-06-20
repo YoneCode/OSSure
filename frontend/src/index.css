@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-paper text-ink font-body;
+    /* Notebook-paper dot grain (from the design system spec). */
+    background-image: radial-gradient(#e5e0d8 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-head;
+  }
+  ::selection {
+    background: #fff9c4;
+    color: #2d2d2d;
+  }
+}
+
+@layer utilities {
+  /* Wavy hand-drawn underline for links / headers */
+  .wavy {
+    text-decoration: underline wavy #ff4d4d;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 2px;
+  }
+  .paper-card {
+    background-image: radial-gradient(rgba(45, 45, 45, 0.06) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+}
