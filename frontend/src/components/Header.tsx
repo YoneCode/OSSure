@@ -1,5 +1,5 @@
 import { usePrivy } from "@privy-io/react-auth";
-import { Wallet } from "lucide-react";
+import { Github, Wallet } from "lucide-react";
 import { Button } from "./ui/Button";
 import { BrandMark } from "./decor/BrandMark";
 import { useActiveWallet } from "../hooks/useDepGuard";
@@ -11,6 +11,8 @@ const NAV = [
   { href: "#act", label: "Act" },
 ];
 
+const GITHUB_URL = "https://github.com/YoneCode/OSSure";
+const X_URL = "https://x.com/YoneCode";
 
 export function Header() {
   const { ready, authenticated, login, logout } = usePrivy();
@@ -37,6 +39,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <SocialLinks />
 
           {ready &&
             (authenticated ? (
@@ -61,5 +64,46 @@ export function Header() {
   );
 }
 
+function SocialLinks() {
+  return (
+    <div className="hidden sm:flex items-center gap-2">
+      <a
+        href={GITHUB_URL}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="OSSure on GitHub"
+        title="GitHub"
+        className="grid h-10 w-10 place-items-center border-2 border-ink bg-white text-ink shadow-sketch-sm transition-transform duration-100 hover:-rotate-3 hover:bg-postit"
+        style={{ borderRadius: "55% 45% 50% 50% / 55% 50% 50% 45%" }}
+      >
+        <Github strokeWidth={2.5} className="h-5 w-5" />
+      </a>
+      <a
+        href={X_URL}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="YoneCode on X"
+        title="X / Twitter"
+        className="grid h-10 w-10 place-items-center border-2 border-ink bg-white text-ink shadow-sketch-sm transition-transform duration-100 hover:rotate-3 hover:bg-postit"
+        style={{ borderRadius: "50% 50% 60% 40% / 60% 40% 60% 40%" }}
+      >
+        <XIcon className="h-4 w-4" />
+      </a>
+    </div>
+  );
+}
 
 // X (formerly Twitter) glyph as inline SVG so we don't pull in an icon set just for this.
+function XIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden
+      fill="currentColor"
+    >
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
