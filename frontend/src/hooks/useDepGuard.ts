@@ -70,7 +70,24 @@ export function useTx() {
         });
         return hash;
       } catch (e: unknown) {
+        console.error(`[OSSure] ${label} error:`, e);
         const msg = errToString(e);
+        // A receipt timeout does NOT mean the tx failed -- consensus can be slow,
+        // especially when the network is busy. The tx is on-chain and still
+        // progressing, so present it as "still processing", not an error.
+        if (/timed out waiting|current status/i.test(msg)) {
+          setState({
+            status: "pending",
+            message: "Still processing on-chain. Busy network -- track it on the explorer.",
+          });
+          toast.update(toastId, {
+            phase: "pending",
+            title: `${label}: still processing`,
+            message:
+              "The network is busy, so this is taking longer than usual. Your transaction is on-chain and progressing -- open it on the explorer to watch, then hit Refresh.",
+          });
+          return null;
+        }
         setState({ status: "error", message: cleanError(msg) });
         toast.update(toastId, {
           phase: "error",

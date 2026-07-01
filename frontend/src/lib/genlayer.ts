@@ -122,7 +122,7 @@ export async function sendTx({ provider, address, functionName, args = [], value
     hash,
     status: TransactionStatus.ACCEPTED,
     interval: 5000,
-    retries: 60,
+    retries: 120,
   });
   return { hash, receipt };
 }
