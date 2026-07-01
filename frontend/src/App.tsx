@@ -5,6 +5,7 @@ import { StatsBar } from "./components/StatsBar";
 import { PoolsGrid } from "./components/PoolsGrid";
 import { Actions } from "./components/Actions";
 import { Footer } from "./components/Footer";
+import { WalletNotice } from "./components/WalletNotice";
 import { useProtocol } from "./hooks/useDepGuard";
 import { CONTRACT_ADDRESS } from "./lib/genlayer";
 
@@ -14,6 +15,7 @@ export function App() {
   return (
     <div className="min-h-screen">
       <Header />
+      <WalletNotice />
 
       {!CONTRACT_ADDRESS && (
         <div className="mx-auto max-w-[1800px] px-6 md:px-10 lg:px-16 pt-4">
