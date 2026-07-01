@@ -36,9 +36,14 @@ export default {
           "0%,100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
         },
+        "toast-in": {
+          from: { opacity: "0", transform: "translateX(28px) rotate(2deg)" },
+          to: { opacity: "1", transform: "translateX(0) rotate(-1deg)" },
+        },
       },
       animation: {
         "soft-bounce": "soft-bounce 3s ease-in-out infinite",
+        "toast-in": "toast-in 180ms ease-out",
       },
     },
   },

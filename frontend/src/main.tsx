@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { App } from "./App";
+import { ToastProvider } from "./components/ui/Toast";
 import { installRpcIdShim } from "./lib/rpcIdShim";
 import "./index.css";
 
@@ -25,7 +26,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         embeddedWallets: { createOnLogin: "users-without-wallets" },
       }}
     >
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </PrivyProvider>
   </React.StrictMode>,
 );

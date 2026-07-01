@@ -76,10 +76,11 @@ export type TxArgs = {
   functionName: string;
   args?: any[];
   value?: bigint;
+  onHash?: (hash: string) => void;
 };
 
 /** Send a write transaction and wait until it is accepted by consensus. */
-export async function sendTx({ provider, address, functionName, args = [], value = 0n }: TxArgs) {
+export async function sendTx({ provider, address, functionName, args = [], value = 0n, onHash }: TxArgs) {
   const client = await getWriteClient(provider, address);
   const hash = await client.writeContract({
     address: CONTRACT_ADDRESS,
@@ -87,6 +88,7 @@ export async function sendTx({ provider, address, functionName, args = [], value
     args,
     value,
   });
+  if (onHash) onHash(hash as string);
   const receipt = await client.waitForTransactionReceipt({
     hash,
     status: TransactionStatus.ACCEPTED,

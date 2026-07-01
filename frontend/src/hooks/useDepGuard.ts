@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { api, sendTx, type Pool, type Stats } from "../lib/genlayer";
+import { useToast } from "../components/ui/Toast";
 
 /** The wallet we sign with: the user's connected/embedded Privy wallet. */
 export function useActiveWallet() {
@@ -26,6 +27,7 @@ export type TxState = {
 /** Transaction runner with human-readable status, bound to the active wallet. */
 export function useTx() {
   const { address, getProvider } = useActiveWallet();
+  const toast = useToast();
   const [state, setState] = useState<TxState>({ status: "idle", message: "" });
 
   const run = useCallback(
@@ -36,8 +38,14 @@ export function useTx() {
     ) => {
       if (!address) {
         setState({ status: "error", message: "Connect your wallet first." });
+        toast.push({ phase: "error", title: "Wallet not connected", message: "Connect a wallet to continue." });
         return null;
       }
+      const toastId = toast.push({
+        phase: "pending",
+        title: `${label}`,
+        message: "Confirm in your wallet…",
+      });
       try {
         setState({ status: "pending", message: `${label}…` });
         const provider = await getProvider();
@@ -47,16 +55,32 @@ export function useTx() {
           functionName,
           args: opts.args ?? [],
           value: opts.value ?? 0n,
+          onHash: (h) =>
+            toast.update(toastId, {
+              message: "Submitted. Validators are adjudicating…",
+              hash: h,
+            }),
         });
         setState({ status: "success", message: `${label} accepted.`, hash });
+        toast.update(toastId, {
+          phase: "success",
+          title: `${label} confirmed`,
+          message: "Accepted by GenLayer consensus.",
+          hash,
+        });
         return hash;
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         setState({ status: "error", message: cleanError(msg) });
+        toast.update(toastId, {
+          phase: "error",
+          title: `${label} failed`,
+          message: cleanError(msg),
+        });
         return null;
       }
     },
-    [address, getProvider],
+    [address, getProvider, toast],
   );
 
   const reset = useCallback(() => setState({ status: "idle", message: "" }), []);
