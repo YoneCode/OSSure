@@ -4,11 +4,13 @@ import { PrivyProvider } from "@privy-io/react-auth";
 import { App } from "./App";
 import { ToastProvider } from "./components/ui/Toast";
 import { installRpcIdShim } from "./lib/rpcIdShim";
+import { installSnapsShim } from "./lib/snapsShim";
 import "./index.css";
 
-// Bradbury RPC rejects string JSON-RPC ids. Install the fetch interceptor
-// before any wallet / viem / privy code has a chance to make a request.
+// Bradbury RPC rejects string JSON-RPC ids; and Rabby rejects MetaMask Snaps
+// probes. Install both interceptors before any wallet / privy code runs.
 installRpcIdShim();
+installSnapsShim();
 
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID ?? "";
 
