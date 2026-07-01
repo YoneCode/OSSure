@@ -70,7 +70,7 @@ export function useTx() {
         });
         return hash;
       } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e);
+        const msg = errToString(e);
         setState({ status: "error", message: cleanError(msg) });
         toast.update(toastId, {
           phase: "error",
@@ -85,6 +85,30 @@ export function useTx() {
 
   const reset = useCallback(() => setState({ status: "idle", message: "" }), []);
   return { state, run, reset };
+}
+
+function errToString(e: unknown): string {
+  if (e == null) return "Unknown error";
+  if (typeof e === "string") return e;
+  if (e instanceof Error && e.message) return e.message;
+  const any = e as Record<string, unknown>;
+  for (const k of ["shortMessage", "details", "message", "reason", "error", "data"]) {
+    const v = any[k];
+    if (typeof v === "string" && v.trim()) return v;
+    if (v && typeof v === "object") {
+      const nested = errToString(v);
+      if (nested && nested !== "Unknown error") return nested;
+    }
+  }
+  if (any.cause) {
+    const c = errToString(any.cause);
+    if (c && c !== "Unknown error") return c;
+  }
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
 }
 
 function cleanError(msg: string): string {
