@@ -41,23 +41,26 @@ export function Header() {
         <div className="flex items-center gap-3">
           <SocialLinks />
 
-          {ready &&
-            (authenticated ? (
-              <div className="flex items-center gap-3">
-                <span
-                  className="hidden sm:inline-flex items-center gap-2 border-2 border-ink bg-white px-3 py-1 shadow-sketch-sm"
-                  style={{ borderRadius: "18px 8px 22px 8px / 8px 22px 8px 20px" }}
-                >
-                  <Wallet strokeWidth={2.5} className="h-4 w-4 text-pen" />
-                  <span className="text-base">{shortAddr(address)}</span>
-                </span>
-                <Button variant="secondary" onClick={logout}>Disconnect</Button>
-              </div>
-            ) : (
-              <Button onClick={login}>
-                <Wallet strokeWidth={2.5} className="h-5 w-5" /> Connect
-              </Button>
-            ))}
+          {!ready ? (
+            <Button disabled>
+              <Wallet strokeWidth={2.5} className="h-5 w-5" /> Loading…
+            </Button>
+          ) : authenticated ? (
+            <div className="flex items-center gap-3">
+              <span
+                className="hidden sm:inline-flex items-center gap-2 border-2 border-ink bg-white px-3 py-1 shadow-sketch-sm"
+                style={{ borderRadius: "18px 8px 22px 8px / 8px 22px 8px 20px" }}
+              >
+                <Wallet strokeWidth={2.5} className="h-4 w-4 text-pen" />
+                <span className="text-base">{shortAddr(address)}</span>
+              </span>
+              <Button variant="secondary" onClick={logout}>Disconnect</Button>
+            </div>
+          ) : (
+            <Button onClick={login}>
+              <Wallet strokeWidth={2.5} className="h-5 w-5" /> Connect
+            </Button>
+          )}
         </div>
       </div>
     </header>
