@@ -57,13 +57,42 @@ export const api = {
     read<string>("get_shares", [repo, underwriter]),
 };
 
+// Some wallet-detection code paths probe MetaMask-only Snaps methods
+// (wallet_getSnaps, etc.). Non-MetaMask wallets like Rabby reject these with
+// "method doesn't has corresponding handler", which can bubble up and abort an
+// otherwise-fine transaction. We wrap the provider and answer those probes with
+// "no snaps installed" (the truth), while passing every other call through.
+const SNAP_PROBE_METHODS = new Set([
+  "wallet_getSnaps",
+  "wallet_requestSnaps",
+  "wallet_invokeSnap",
+  "wallet_snap",
+]);
+
+function hardenProvider(provider: any): any {
+  if (!provider || typeof provider.request !== "function") return provider;
+  const originalRequest = provider.request.bind(provider);
+  return new Proxy(provider, {
+    get(target, prop, receiver) {
+      if (prop === "request") {
+        return async (args: any) => {
+          if (args && SNAP_PROBE_METHODS.has(args.method)) return {};
+          return originalRequest(args);
+        };
+      }
+      const value = Reflect.get(target, prop, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
 /** Build a wallet-bound write client from a Privy EIP-1193 provider. */
 async function getWriteClient(provider: unknown, address: string) {
   const client = createClient({
     chain: testnetBradbury,
     account: address as `0x${string}`,
     // genlayer-js accepts a standard EIP-1193 provider here.
-    provider: provider as never,
+    provider: hardenProvider(provider) as never,
   });
   // Ensure the wallet is on the Bradbury chain before signing.
   await client.connect("testnetBradbury");
